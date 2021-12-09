@@ -1,0 +1,253 @@
+
+  #include <Arduino.h>
+  #include <ESP8266WiFi.h>
+  #include <ESP8266HTTPClient.h>
+  #include <WiFiClientSecureBearSSL.h>
+  #include <ArduinoJson.h>
+  #include <SoftwareSerial.h>
+  #include <WiFiClient.h>
+  #define CONNECTING_LED D6
+  #define CONNECTED_LED D7
+  #define PROCESSING_LED D8
+  SoftwareSerial UNO(D3,D4);   //RX,TX
+              long int Getloop = 0;
+              String WSSID;         
+              String WPASSWORD;
+              String Read;
+              String Rtxt;              
+void setup(){
+  delay(2000); 
+              Serial.begin(9600); 
+              UNO.begin(9600);
+              pinMode(PROCESSING_LED,OUTPUT);
+              pinMode(CONNECTED_LED,OUTPUT);
+              pinMode(CONNECTING_LED,OUTPUT);
+              while(true){ 
+              UNO.print('3'); 
+  delay(200);
+              Serial.println('3');
+  delay(3000);
+              if(UNO.available() > 0){ 
+              SETTUP(); 
+  delay(50);
+              break;
+              } 
+  } 
+  delay(200);
+  Serial.println("SETUP_DONE");
+}
+void loop (){                                     /*{"contact":"princepogi","message":"newtrans"}*/                
+  
+  if(WiFi.status() == WL_CONNECTED){              
+              if(UNO.available() > 0){PostData(); Getloop = 50;}
+              else if (Getloop == 100){NEW(); Getloop = 0;}
+  /*10sec*/   else{delay(100);Getloop++;}
+  }else{          
+              digitalWrite(CONNECTING_LED,HIGH);
+              digitalWrite(CONNECTED_LED,HIGH);
+  delay(500);
+              digitalWrite(CONNECTING_LED,LOW);
+              digitalWrite(CONNECTED_LED,LOW);
+  }
+}
+void NEW(){
+  Rturn:             
+              digitalWrite(CONNECTING_LED,HIGH);
+              std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure); 
+              client->setInsecure();
+              HTTPClient http;      
+              if(http.begin(*client, "https://logs.technotrep.com/?action=prince/send")){           
+  delay(500);            
+              http.addHeader("Accept", "application/json");                                            
+  delay(500);                                    
+              int ce = http.GET();             
+              if (ce > 0) {                         // ascii code 200/OK
+              if (ce == HTTP_CODE_OK){   
+              String pd = http.getString();                                     
+              StaticJsonDocument<600> th;
+              deserializeJson(th, pd);
+              const char* id = th["data"][0]["id"];                              
+              if(id > 0){            
+              digitalWrite(PROCESSING_LED,HIGH);                              
+              const char* cont = th["data"][0]["name"];
+              const char* mess = th["data"][0]["data"];
+              StaticJsonDocument<600> ne;
+              ne["contact"] = cont;
+              ne["message"] = mess;
+              String SendToSim;
+              serializeJsonPretty(ne, SendToSim);
+  delay(50);
+  Serial.println("SEND_TO_SIM");
+  /*Trans*/   Serial.print(SendToSim);
+   Serial.println("");
+  delay(50);  
+              String api = "https://logs.technotrep.com/?action=prince/send&sent=";
+              api += id;                                                   
+  Return:            
+              if(http.begin(*client, api)){            
+  delay(500);            
+              http.addHeader("Accept", "application/json");             
+  delay(500);            
+              http.GET();                        
+  delay(100);                                                    
+              goto Rturn;
+          }else{Serial.println("     :ID_HTTP.BEGIN_FAILED_[goto]");goto Return;}
+        }else{Serial.println("     :THERES_NO_AVAILABLE_ID");}
+      }else{Serial.println("     :HTTP_CODE_FAILED");}
+    }else{Serial.println("     :code < 0_error");}
+  http.end();
+  digitalWrite(CONNECTING_LED,LOW);
+  digitalWrite(PROCESSING_LED,LOW);
+  }else{Serial.println("     :GET_http.begin_failed");}
+}
+void TRY(){
+  std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);client->setInsecure();
+    HTTPClient http;   
+    if (http.begin(*client,"https://logs.technotrep.com/?action=prince/send")) {
+       delay(500);
+       http.addHeader("Accept", "application/json");
+       delay(500);
+      int httpCode = http.GET();
+      if (httpCode > 0) {
+        if (httpCode == HTTP_CODE_OK) {
+          String payload = http.getString();
+ Serial.println(payload);         
+          String prince = payload;      
+          StaticJsonDocument<600> teeth;
+          deserializeJson(teeth, prince);
+          const char* id = teeth["data"][0]["id"];
+        if(id > 0){
+        Serial.print("id~");Serial.println(id);
+        const char* cont = teeth["data"][0]["name"];
+              const char* mess = teeth["data"][0]["data"];
+              StaticJsonDocument<600> nurse;
+              nurse["contact"] = cont;
+              nurse["message"] = mess;
+              String SendToSim;
+              serializeJsonPretty(nurse, SendToSim);
+              Serial.print(SendToSim);
+        
+        String api = "https://logs.technotrep.com/?action=prince/send&sent=";
+              api += id;                                                   
+              http.begin(*client, api);             
+  delay(500);            
+              http.addHeader("Accept", "application/json");             
+  delay(500);            
+              http.GET(); 
+  delay(100);            
+        }
+        }
+      }else{Serial.println("CODE_0");}
+      http.end();
+    }else{Serial.println("begin_error");}
+}
+void PostData() {             
+              digitalWrite(PROCESSING_LED,HIGH);                                    
+              StaticJsonDocument<400> DOCUMENT;                                        
+              DeserializationError error = deserializeJson(DOCUMENT, Rtxt);   
+              if(error){Serial.println("PostData_Deserialization_Error");}
+              else{
+              const char* Rcontact = DOCUMENT["contact"];          //Scontact
+              const char* Rmessage = DOCUMENT["message"];                                                         
+              std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure); client->setInsecure();
+              HTTPClient http;
+  Postloop:            
+              if(http.begin(*client,"https://logs.technotrep.com")){
+              digitalWrite(PROCESSING_LED,LOW);
+  delay(200);            
+              digitalWrite(PROCESSING_LED,HIGH);                
+  delay(200);              
+              http.addHeader("Content-Type", "application/x-www-form-urlencoded");             
+  delay(200);                          
+              String POSTDATA = "action=prince/received"; 
+              String ParamsF = "&from=";
+              String ParamsM = "&message=";
+              ParamsF += Rcontact;
+              ParamsM += Rmessage;
+              POSTDATA += ParamsF;
+              POSTDATA += ParamsM;       
+  Serial.println("POSTING_DATA");
+  delay(50);            
+              http.POST(POSTDATA);
+  delay(50);
+  Serial.println("POST_DATA_DONE");
+  delay(100);           
+              http.end();
+  delay(100);            
+    }else{Serial.println("Post_HTTP.BEGIN_FAILED_[goto]"); goto Postloop;}
+  }             
+              digitalWrite(PROCESSING_LED,LOW);
+}
+void GetData()  {                                           
+              std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure); client->setInsecure();             
+              HTTPClient http;
+  Serial.println("GetData!");            
+              if(http.begin(*client, "https://logs.technotrep.com/?action=prince/send")){           
+  delay(200);            
+              http.addHeader("Accept", "application/json");                                            
+  delay(200);                                    
+              int code = http.GET();             
+              if (code > 0) {                         // ascii code 200/OK
+              if (code == HTTP_CODE_OK){   
+              String payload = http.getString();                   
+              String prince = payload;      
+              StaticJsonDocument<600> teeth;
+              deserializeJson(teeth, prince);
+              const char* id = teeth["data"][0]["id"];
+  delay(100);                              
+              if(id > 0){            
+              digitalWrite(PROCESSING_LED,HIGH);                              
+              const char* cont = teeth["data"][0]["name"];
+              const char* mess = teeth["data"][0]["data"];
+              StaticJsonDocument<600> nurse;
+              nurse["contact"] = cont;
+              nurse["message"] = mess;
+              String SendToSim;
+              serializeJsonPretty(nurse, SendToSim);
+  delay(50);
+  Serial.println("SEND_TO_SIM");
+  /*Trans*/   Serial.print(SendToSim);
+   Serial.println("");
+  delay(50);  
+              String api = "https://logs.technotrep.com/?action=prince/send&sent=";
+              api += id;                                                   
+  Return:            
+              if(http.begin(*client, api)){            
+  delay(200);            
+              http.addHeader("Accept", "application/json");             
+  delay(200);            
+              http.GET();                        
+  delay(100);                          
+              digitalWrite(PROCESSING_LED,LOW);
+          }else{Serial.println("     :ID_HTTP.BEGIN_FAILED_[goto]");goto Return;}
+        }else{Serial.println("     :THERES_NO_AVAILABLE_ID");}
+      }else{Serial.println("     :HTTP_CODE_FAILED");}
+    }else{Serial.println("     :code < 0_error");}
+  http.end();
+  }else{Serial.println("     :GET_http.begin_failed");}
+}
+void WIFISTATS(){
+              WiFi.begin(WSSID, WPASSWORD); 
+              while(WiFi.status() != WL_CONNECTED){
+              digitalWrite(CONNECTING_LED,HIGH);
+              digitalWrite(CONNECTED_LED,LOW);
+  delay(1000);
+              }
+              digitalWrite(CONNECTING_LED,LOW);
+              digitalWrite(CONNECTED_LED,HIGH);
+}
+void SETTUP()   {   
+              Read = UNO.readString();
+  delay(50);              
+              StaticJsonDocument<200> doc2;
+              deserializeJson(doc2,Read);
+              String DSSID = doc2["SSID"];
+              String DPASSWORD = doc2["PASSWORD"];   
+              WSSID = DSSID;
+              WPASSWORD = DPASSWORD;
+  Serial.print("Name~");Serial.println(WSSID);
+  Serial.print("Pass~");Serial.println(WPASSWORD);
+  delay(50);
+  /*VOID*/    WIFISTATS();
+  Serial.println("wifi_connected");
+}
