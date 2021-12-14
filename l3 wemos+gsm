@@ -1,10 +1,11 @@
-  #include <Arduino.h>
+#include <Arduino.h>
   #include <ESP8266WiFi.h>
   #include <ESP8266HTTPClient.h>
   #include <WiFiClientSecureBearSSL.h>
   #include <ArduinoJson.h>
   #include <SoftwareSerial.h>
   #include <WiFiClient.h>
+  #define UNO D0
   #define TRIG D1
   #define EPRO D2
   #define TEDLED D5
@@ -23,18 +24,38 @@ void setup(){
   Serial.begin(9600); 
   sM.begin(9600);
               pinMode(TRIG,INPUT_PULLUP);
+              pinMode(UNO,OUTPUT);
               pinMode(GLED,OUTPUT);
               pinMode(PLED,OUTPUT);
               pinMode(TEDLED,OUTPUT);
               pinMode(TINGLED,OUTPUT); 
-              pinMode(EPRO,OUTPUT);  
-  delay(500);            
-              while(digitalRead(TRIG) == HIGH){
-              digitalWrite(TINGLED,HIGH);
-              delay(100);
-              digitalWrite(TINGLED,LOW);
-              delay(500);
-              }
+              pinMode(EPRO,OUTPUT);              
+              if(digitalRead(TRIG) == LOW){EPR();}
+  delay(1000);
+              digitalWrite(UNO,HIGH);             
+              while(true){
+                if(Serial.available() > 0){
+                digitalWrite(UNO,LOW);
+                String kk = Serial.readString();
+                StaticJsonDocument<200> SJD;
+                DeserializationError error =  deserializeJson(SJD,kk);
+                  if(error){digitalWrite(UNO,HIGH);}
+                  else{
+                  String DSSID = SJD["SSID"];
+                  String DPASSWORD = SJD["PASSWORD"];
+                  WSSID = DSSID;
+                  WPASSWORD = DPASSWORD;
+  Serial.println(WSSID);
+  Serial.println(WPASSWORD);
+                break;
+                }}
+                else{
+                  digitalWrite(TINGLED,HIGH);
+  delay(100);                  
+                  digitalWrite(TINGLED,LOW);
+  delay(300);                
+                }
+              } 
   delay(100);
   sM.println("AT+CMGF=1"); 
   delay(1000); 
@@ -42,14 +63,7 @@ void setup(){
   delay(1000); 
   sM.println("AT+CMGD=2,3");  
   delay(1000);
-  WiFi.begin("Zerobstacle_Guest", "Programmer_69"); 
-              while(WiFi.status() != WL_CONNECTED){
-              delay(1000);
-              digitalWrite(TINGLED,HIGH);
-  }
-              digitalWrite(TINGLED,LOW);
-              digitalWrite(TEDLED,HIGH);  
-  delay(200);
+                  WIF();
   Serial.println("SETUP_DONE");
 }
 void loop (){                                     /*{"contact":"princepogi","message":"newtrans"}*/                 
@@ -68,9 +82,9 @@ void loop (){                                     /*{"contact":"princepogi","mes
               digitalWrite(TINGLED,LOW);
   }
 }
-
-void EPR(){
+void EPR(){              
               digitalWrite(EPRO,HIGH); 
+  delay(2000);            
               long int z = 0;
               int x = 0;
   while(true){      
@@ -110,8 +124,10 @@ void EPR(){
               if(z == 200){x++; z = 0;}
               else if(x == 50){break;}    // 50 = 5 min/ 60 = 6 etc.
               }              
-  }
-              digitalWrite(EPRO,LOW); 
+  }             
+              digitalWrite(EPRO,LOW);
+              delay(2000);
+
 }
 void GED(){
   Rturn:             
@@ -212,8 +228,10 @@ void POD(){
                 digitalWrite(PLED,LOW);
 }
 void WIF(){
+ again:            
               WiFi.begin(WSSID, WPASSWORD); 
               while(WiFi.status() != WL_CONNECTED){
+              if(digitalRead(TRIG) == LOW){EPR();goto again;}
               digitalWrite(TINGLED,HIGH);
               digitalWrite(TEDLED,LOW);
   delay(1000);
@@ -246,3 +264,6 @@ void RMS(){
               }
   }
 }
+
+
+//  SSID:Zerobstacle_Guest PASSWORD:Programmer_69 
