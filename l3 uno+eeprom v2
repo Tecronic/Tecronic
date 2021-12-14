@@ -1,0 +1,47 @@
+#include <EEPROMex.h>
+            #include <EEPROMVar.h>    
+            #include <ArduinoJson.h>
+            #include <SoftwareSerial.h>
+            SoftwareSerial esp(10,11);
+            int i1;        
+            String DATA;
+            String espdata;
+            #define EPRO 2
+            #define trigger 13
+void setup() {
+  delay(2000);
+              pinMode(EPRO,OUTPUT);
+              pinMode(trigger,INPUT);
+              Serial.begin(9600);
+              esp.begin(9600);                                        
+              char collect[200];
+              EEPROM.readBlock<char>(0, collect,200);
+              DATA = String(collect);             
+Serial.println("SETUP_DONE");
+}
+void loop() {
+              
+              if(esp.available() > 0){
+                espdata = esp.readString();                            
+                if(espdata == "8"){esp.print(DATA);delay(3000);}
+                else{eeprom_update();}
+              }
+
+}
+void eeprom_update(){
+              
+              digitalWrite(EPRO,HIGH);                                          
+              StaticJsonDocument<200> DOCUMENT;                                        
+              DeserializationError error = deserializeJson(DOCUMENT, espdata);   
+              if(error){Serial.println(" :eeprom_update_deserialization_error~");}              
+  else{
+              DATA = espdata;
+              char toEPROM[200];
+              espdata.toCharArray(toEPROM,200);
+  delay(100);
+              EEPROM.writeBlock<char>(0,toEPROM,200); 
+  delay(100);             
+  }
+              digitalWrite(EPRO,LOW);
+              
+}
