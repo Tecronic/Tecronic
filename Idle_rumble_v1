@@ -1,0 +1,53 @@
+
+#define input 2
+#define relay 3
+
+ int ON = 100;               
+ int OFF = 200;
+
+
+void setup() {
+  Serial.begin(9600);
+  delay(1000);
+  pinMode(input,INPUT);
+  pinMode(relay,OUTPUT);
+}
+
+void loop() {
+
+  if(Serial.available() > 0){          
+            int swt = Serial.read();
+            Serial.readString();
+            if(swt == '1'){
+              Serial.println("WAITING_DELAY_ON");
+              while(true){
+                if(Serial.available()){
+                  String R1 = Serial.readString();  
+                  ON = R1.toInt();
+                  Serial.print("ON_DELAY(milli.sec)=");
+                  Serial.println(ON); 
+                  break;
+                  }
+                }             
+              }           
+            else if(swt == '0'){             
+                     Serial.println("WAITING_DELAY_OFF");
+                    while(true){
+                      if(Serial.available()){
+                        String R2 = Serial.readString();  
+                        OFF = R2.toInt();
+                        Serial.print("OFF_DELAY(milli.sec)="); 
+                        Serial.println(OFF);
+                        break; 
+                  }
+                }
+              }
+  }
+          
+
+    
+  digitalWrite(relay,HIGH);
+  delay(ON);
+  digitalWrite(relay,LOW);
+  delay(OFF);
+}
