@@ -1,32 +1,83 @@
-
 #define input 2
 #define relay 3
-
+ int start = 0;
  int CUT = 150;               
  int BANG = 200;
  int FCUT = 0;
  int FBANG = 0;
+ int CCUT = 0;
+ int CBANG = 0; 
 void setup() {
   Serial.begin(9600);
   delay(1000);
   pinMode(input,INPUT);
   pinMode(relay,OUTPUT);
+  Serial.println("activated");
 }
 
 void loop() {
-         if(digitalRead(input) == LOW)
-         {      
+        
+  if(digitalRead(input) == LOW){      
+  start++;
+  while(digitalRead(input) == LOW){}
+  if(start > 5){    
+  Serial.println("in");
+  while(true){   
+          if(Serial.available() > 0){          
+            int swt = Serial.read();
+            Serial.readString();
+            if(swt == '1'){
+              Serial.println("bang bang_\"fire\"");
+              Serial.println("waiting.....");
+              while(true){
+                if(Serial.available()){
+                  String R1 = Serial.readString();  
+                  CCUT = R1.toInt();
+                  Serial.print("BANG_FIRE = ");
+                  Serial.println(CCUT); 
+                  break;
+                  }
+                }             
+              }           
+            else if(swt == '0'){             
+                     Serial.println("bang bang_\"cut off\"");
+                     Serial.println("waiting.....");
+                    while(true){
+                      if(Serial.available()){
+                        String R2 = Serial.readString();  
+                        CBANG = R2.toInt();
+                        Serial.print("BANG_CUT_OFF = ");
+                        Serial.println(CBANG);
+                        break; 
+                  }
+                }
+              }
+  }
+
+         
+     else if(digitalRead(input) == LOW){      
             FCUT++;
             while(digitalRead(input) == LOW){}
-            if(FCUT >= 5){
+            if(FCUT >= CCUT){
               digitalWrite(relay,HIGH);
-              FBANG++;
-              while(digitalRead(input) == LOW){}
-            }   
-         }
-  
-  
-  
+  Serial.println("relay,HIGH");              
+              FBANG++;              
+              if(FBANG >= CBANG){
+                digitalWrite(relay,LOW);
+  Serial.println("relay,LOW");              
+                FCUT = 0;
+                FBANG = 0;
+              }          
+            }
+          }           
+      
+      
+      
+      
+      }
+    }
+  }  
+
 }
 
 
