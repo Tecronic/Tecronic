@@ -1,0 +1,77 @@
+
+#define input 2
+#define relay 3
+
+ int CUT = 150;               
+ int BANG = 200;
+ int FCUT = 0;
+ int FBANG = 0;
+void setup() {
+  Serial.begin(9600);
+  delay(1000);
+  pinMode(input,INPUT);
+  pinMode(relay,OUTPUT);
+}
+
+void loop() {
+         if(digitalRead(input) == LOW)
+         {      
+            FCUT++;
+            while(digitalRead(input) == LOW){}
+            if(FCUT >= 5){
+              digitalWrite(relay,HIGH);
+              FBANG++;
+              while(digitalRead(input) == LOW){}
+            }   
+         }
+  
+  
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+void ONOFF(){
+  
+  if(Serial.available() > 0){          
+            int swt = Serial.read();
+            Serial.readString();
+            if(swt == '1'){
+              Serial.println("WAITING_DELAY_ON");
+              while(true){
+                if(Serial.available()){
+                  String R1 = Serial.readString();  
+                  CUT = R1.toInt();
+                  Serial.print("ON_DELAY(milli.sec)=");
+                  Serial.println(CUT); 
+                  break;
+                  }
+                }             
+              }           
+            else if(swt == '0'){             
+                     Serial.println("WAITING_DELAY_OFF");
+                    while(true){
+                      if(Serial.available()){
+                        String R2 = Serial.readString();  
+                        BANG = R2.toInt();
+                        Serial.print("OFF_DELAY(milli.sec)="); 
+                        Serial.println(BANG);
+                        break; 
+                  }
+                }
+              }
+  }       
+  digitalWrite(relay,HIGH);
+  delay(CUT);
+  digitalWrite(relay,LOW);
+  delay(BANG);
+}
