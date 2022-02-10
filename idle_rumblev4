@@ -1,0 +1,41 @@
+#define input 2
+#define relay 3
+ int start = 0;
+ int FCUT = 0;
+ int FBANG = 0;
+ int CCUT = 0;
+ int CBANG = 2; 
+ int rst = 0;
+void setup() {
+  Serial.begin(9600);
+  delay(1000);
+  pinMode(input,INPUT);
+  pinMode(relay,OUTPUT);
+  Serial.println("activated");
+}
+
+
+void first(){while(true){
+           
+  if(digitalRead(input) == LOW){ FCUT++; while(digitalRead(input) == LOW){} // if recieve fire         
+            if(FCUT >= 3){
+              digitalWrite(relay,HIGH);          
+              FBANG++;              
+              if(FBANG >= 3){
+                rst++;
+                digitalWrite(relay,LOW);                             
+                FBANG = 0;  
+                if(rst == 3){
+                  FCUT = 0;
+                  delay(5);
+                  rst = 0;
+                }
+              }          
+            }
+  }
+}}
+void loop() {       
+  if(digitalRead(input) == LOW){ start++; while(digitalRead(input) == LOW){}  
+    if(start > 200){first();} 
+  }
+}
