@@ -1,0 +1,76 @@
+
+#define input 10
+#define relay 7
+ int start = 0;
+
+void setup() {
+  Serial.begin(9600);
+  delay(1000);
+  pinMode(input,INPUT);
+  pinMode(relay,OUTPUT);
+  Serial.println("activated");
+}
+
+
+void tone1(){
+  int FCUT = 0;
+  int FBANG = 0;
+  int rst = 0;
+  int brk1 = 0;
+  while(true){          
+  if(digitalRead(input) == LOW){ FCUT++; while(digitalRead(input) == LOW){} // if recieve fire         
+            if(FCUT >= 3){
+              digitalWrite(relay,HIGH);          
+              FBANG++;              
+              if(FBANG >= 3){
+                rst++;
+                digitalWrite(relay,LOW);                             
+                FBANG = 0;  
+                if(rst == 3){
+                  FCUT = 0;
+                  rst = 0;
+                  brk1++;
+                }
+              }          
+            }
+  }
+  if(brk1 == 2){break;}
+
+}}
+
+void tone2(){
+  int FCUT2 = 2;
+  int FBANG2 = 0;    
+  int brk2 = 0;
+  int uu = 0;
+  int ii = 0;
+  while(true){ 
+  if(digitalRead(input) == LOW){ FCUT2++; while(digitalRead(input) == LOW){} // if recieve fire         
+            if(FCUT2 >= 5){
+              digitalWrite(relay,HIGH);          
+              FBANG2++;              
+              if(FBANG2 >= 3){
+                brk2++;                
+                digitalWrite(relay,LOW);                             
+                            if(brk2 == 2){while(true){  
+                              if(digitalRead(input) == LOW){ FCUT2++; while(digitalRead(input) == LOW){} // if recieve fire         
+                                  digitalWrite(relay,HIGH);
+                                  uu++;
+                                  if(uu >= 2){digitalWrite(relay,LOW); uu = 0; ii++;}
+                                  if(ii == 4){break;}
+                            }}}            
+                FBANG2 = 0;                    
+              }          
+            }
+  }
+  if(brk2 == 5){break;}
+}}
+void loop() {            
+      
+      if(digitalRead(input) == LOW){start++;while(digitalRead(input) == LOW){}
+      if(start > 300){ 
+                      while(true){    
+                      tone1();
+                      tone2();}
+
+}}}
