@@ -1,0 +1,66 @@
+//FIRST INSTALL succ. v2
+//*S-GREEN - SELECTER 1
+//*BLUE -SELECTER 2
+//*RED - VCC / IGNITION COIL VCC-IN
+//*BLACK - GROUN
+//*ORANGE -IGNITION COIL VCC-OUT
+//*L-GREEN -IGNITION COIL GND
+
+#define input 8
+#define Selecter1 4 //green!   disable!
+#define Selecter2 6 //blue!
+#define relay 2
+
+int start = 0;
+
+void setup() {
+  Serial.begin(9600);
+  delay(3000);
+  pinMode(input,INPUT);
+  pinMode(Selecter1,INPUT); 
+  pinMode(Selecter2,INPUT);
+  pinMode(relay,OUTPUT);
+  delay(15000);
+}
+void loop() {
+  if(digitalRead(Selecter2) == LOW){
+      if(digitalRead(input) == LOW){start++;while(digitalRead(input) == LOW){}
+        if(start > 5){   
+        Tone3();digitalWrite(relay,LOW);    
+        }
+      }
+  }
+}
+
+void Tone3() {
+   start = 0;
+   int TIME = 0;
+   int FBANG = 0;
+   int CBANG = 0;
+  while(true){
+   if(digitalRead(Selecter2) == LOW){      
+      delay(2000);
+    if(digitalRead(Selecter2) == LOW){
+      if(digitalRead(input) == LOW){ //Tone 5!      
+            while(digitalRead(input) == LOW){} //Stop!
+              TIME = 0;
+              CBANG++;
+              if(CBANG >= 3){
+              digitalWrite(relay,HIGH);
+              FBANG++;
+              if(FBANG == 2){
+                digitalWrite(relay,LOW);
+                FBANG = 0;
+                CBANG = 0;
+                }
+    }         
+    }
+    else{ delay(1); TIME++;}
+    if(TIME > 300){break;}
+}}
+else{
+  digitalWrite(relay,LOW);
+  delay(1); TIME++;}
+    if(TIME > 300){break;}
+  }
+}
